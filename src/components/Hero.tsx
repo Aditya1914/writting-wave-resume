@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { TypingAnimation } from './TypingAnimation';
-import profileImage from '@/assets/profile-hero.jpg';
+import { CyclingText } from './CyclingText';
+const profileImage = '/lovable-uploads/5ea1a67a-9081-413e-8455-01173b7f5154.png';
 import { Github, Linkedin, Twitter, Mail } from 'lucide-react';
 
 export const Hero = () => {
@@ -53,22 +54,31 @@ export const Hero = () => {
               <div className="space-y-2">
                 <h1 className="text-5xl lg:text-7xl font-bold">
                   <TypingAnimation 
-                    text="Your Name"
+                    text="R Aditya Subramanyam"
                     className="gradient-text"
                     delay={500}
-                    speed={150}
+                    speed={100}
                   />
                 </h1>
                 
                 {/* Designation */}
                 {showDesignation && (
                   <div className="slide-up" style={{ animationDelay: '0.2s' }}>
-                    <TypingAnimation 
-                      text="Full Stack Developer"
-                      className="text-2xl lg:text-3xl text-muted-foreground font-light"
-                      delay={200}
-                      speed={100}
-                    />
+                    <div className="text-2xl lg:text-3xl text-muted-foreground font-light min-h-[3rem]">
+                      <CyclingText 
+                        texts={[
+                          "Software Developer @Pyvision Technology",
+                          "Prompt Engineer",
+                          "Interactive Trainer for LLMs",
+                          "Building SaaS MVPs",
+                          "Vibe Coder",
+                          "Algorithms Enthusiast"
+                        ]}
+                        delay={200}
+                        typingSpeed={50}
+                        pauseDuration={2500}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -87,10 +97,10 @@ export const Hero = () => {
               {showContent && (
                 <div className="slide-up flex gap-4 justify-center lg:justify-start" style={{ animationDelay: '0.6s' }}>
                   {[
-                    { icon: Github, href: "#", label: "GitHub" },
-                    { icon: Linkedin, href: "#", label: "LinkedIn" },
-                    { icon: Twitter, href: "#", label: "Twitter" },
-                    { icon: Mail, href: "#", label: "Email" }
+                    { icon: Github, href: "https://github.com/Aditya1914", label: "GitHub" },
+                    { icon: Linkedin, href: "https://www.linkedin.com/in/r-aditya-subramanyam/", label: "LinkedIn" },
+                    { icon: Twitter, href: "https://x.com/adityaleo1411", label: "Twitter" },
+                    { icon: Mail, href: "mailto:aditya75871@gmail.com", label: "Email" }
                   ].map(({ icon: Icon, href, label }) => (
                     <a
                       key={label}

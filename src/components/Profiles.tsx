@@ -4,81 +4,42 @@ import { Github, Linkedin, Twitter, Link } from 'lucide-react';
 const profiles = [
   {
     platform: "LeetCode",
-    username: "your-username",
+    username: "adityaleo1411",
     stats: {
-      solved: "500+",
-      rating: "2100",
-      contests: "50+"
+      solved: "200+",
+      rating: "1850",
+      contests: "25+"
     },
     description: "Competitive programming enthusiast with focus on algorithms and data structures",
-    url: "https://leetcode.com/your-username",
+    url: "https://leetcode.com/u/adityaleo1411/",
     color: "from-orange-500 to-yellow-500",
     icon: "💻"
   },
   {
     platform: "GitHub",
-    username: "your-username",
+    username: "Aditya1914",
     stats: {
-      repositories: "50+",
-      stars: "1.2k",
-      contributions: "2k+"
+      repositories: "30+",
+      stars: "100+",
+      contributions: "500+"
     },
-    description: "Open source contributor and maintainer of several JavaScript libraries",
-    url: "https://github.com/your-username",
+    description: "Open source contributor building SaaS MVPs and modern web applications",
+    url: "https://github.com/Aditya1914",
     color: "from-gray-700 to-gray-900",
     icon: "🐙"
   },
   {
     platform: "LinkedIn",
-    username: "your-profile",
+    username: "r-aditya-subramanyam",
     stats: {
-      connections: "5k+",
-      posts: "100+",
-      endorsements: "200+"
+      connections: "1k+",
+      posts: "50+",
+      endorsements: "100+"
     },
-    description: "Professional network focused on tech leadership and mentoring",
-    url: "https://linkedin.com/in/your-profile",
+    description: "Professional network focused on software development and AI technologies",
+    url: "https://www.linkedin.com/in/r-aditya-subramanyam/",
     color: "from-blue-600 to-blue-800",
     icon: "💼"
-  },
-  {
-    platform: "CodePen",
-    username: "your-username",
-    stats: {
-      pens: "80+",
-      hearts: "500+",
-      followers: "300+"
-    },
-    description: "Creative coding and interactive web experiments",
-    url: "https://codepen.io/your-username",
-    color: "from-green-500 to-teal-500",
-    icon: "🎨"
-  },
-  {
-    platform: "Dev.to",
-    username: "your-username",
-    stats: {
-      articles: "25+",
-      followers: "800+",
-      reactions: "2k+"
-    },
-    description: "Technical writing and sharing knowledge with the developer community",
-    url: "https://dev.to/your-username",
-    color: "from-black to-gray-800",
-    icon: "📝"
-  },
-  {
-    platform: "Dribbble",
-    username: "your-username",
-    stats: {
-      shots: "40+",
-      likes: "1k+",
-      views: "50k+"
-    },
-    description: "UI/UX design portfolio and creative visual experiments",
-    url: "https://dribbble.com/your-username",
-    color: "from-pink-500 to-rose-500",
-    icon: "🎯"
   }
 ];
 
@@ -219,13 +180,13 @@ export const Profiles = () => {
             </p>
             <div className="flex gap-4 justify-center">
               <a
-                href="mailto:your.email@example.com"
+                href="mailto:aditya75871@gmail.com"
                 className="bg-gradient-to-r from-primary to-accent px-6 py-3 rounded-xl font-semibold text-white hover:scale-105 transition-all duration-300"
               >
                 Get In Touch
               </a>
               <a
-                href="#"
+                href="#resume-download"
                 className="glass-card px-6 py-3 rounded-xl font-semibold hover:glow-effect transition-all duration-300"
               >
                 Download Resume

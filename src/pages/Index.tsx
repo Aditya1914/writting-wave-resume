@@ -2,7 +2,9 @@ import { Navigation } from '@/components/Navigation';
 import { Hero } from '@/components/Hero';
 import { TechStack } from '@/components/TechStack';
 import { Projects } from '@/components/Projects';
+import { SideProjects } from '@/components/SideProjects';
 import { Profiles } from '@/components/Profiles';
+import { Contact } from '@/components/Contact';
 
 const Index = () => {
   return (
@@ -24,10 +26,18 @@ const Index = () => {
         <Projects />
       </section>
 
+      {/* Side Projects Section */}
+      <section id="side-projects">
+        <SideProjects />
+      </section>
+
       {/* Profiles Section */}
-      <section id="profiles">
+      <section id="profiles" className="pt-20">
         <Profiles />
       </section>
+
+      {/* Contact Section */}
+      <Contact />
 
       {/* Footer */}
       <footer className="py-12 border-t border-border/50">
@@ -39,13 +49,13 @@ const Index = () => {
           
           <div className="flex justify-center gap-4 mb-6">
             <a
-              href="mailto:your.email@example.com"
+              href="mailto:aditya75871@gmail.com"
               className="bg-gradient-to-r from-primary to-accent px-6 py-3 rounded-xl font-semibold text-white hover:scale-105 transition-all duration-300"
             >
               Start a Project
             </a>
             <a
-              href="#"
+              href="#resume-view"
               className="glass-card px-6 py-3 rounded-xl font-semibold hover:glow-effect transition-all duration-300"
             >
               View Resume
@@ -53,7 +63,7 @@ const Index = () => {
           </div>
           
           <div className="text-sm text-muted-foreground">
-            <p>&copy; 2024 Your Name. Crafted with passion and modern technologies.</p>
+            <p>&copy; 2025 R Aditya Subramanyam. Crafted with passion and modern technologies.</p>
           </div>
         </div>
       </footer>
