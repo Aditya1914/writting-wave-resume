@@ -168,12 +168,21 @@
   }
 
   .glass-menu {
-    @apply backdrop-blur-2xl border;
-    background: hsl(var(--popover));
+    @apply backdrop-blur-xl border;
+    background: hsl(var(--card) / 0.9);
     border-color: var(--glass-border);
     box-shadow: 
       0 12px 40px hsl(var(--neuro-shadow-dark) / 0.5),
       inset 0 1px 0 hsl(var(--glass-light));
+  }
+
+  .nav-glass {
+    @apply backdrop-blur-xl;
+    background: hsl(var(--card) / 0.7);
+    box-shadow: 
+      0 8px 32px hsl(var(--neuro-shadow-dark) / 0.3),
+      inset 0 1px 0 hsl(var(--glass-light)),
+      0 0 0 1px hsl(var(--border) / 0.3);
   }
 
   /* Neumorphic elements */
@@ -248,6 +257,19 @@
   .tech-badge:hover {
     @apply glow-effect scale-105;
     background: var(--gradient-primary);
+  }
+
+  .tech-badge-small {
+    @apply glass-card px-2 py-1 text-xs font-medium;
+    transition: all 0.3s ease;
+    background: var(--gradient-neuro);
+    border: 1px solid hsl(var(--border) / 0.3);
+  }
+
+  .tech-badge-small:hover {
+    @apply glow-effect;
+    background: var(--gradient-primary);
+    color: white;
   }
 
   .project-card {

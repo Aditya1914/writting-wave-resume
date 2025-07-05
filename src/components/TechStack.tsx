@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Code, Server, Settings, Smartphone } from 'lucide-react';
+import { TechCarousel } from './TechCarousel';
 
 const techStacks = [
   {
@@ -94,35 +95,42 @@ export const TechStack = () => {
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.2 }}
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.01 }}
               className="h-full"
             >
-              <div className="neuro-card p-8 rounded-2xl h-full hover:glow-effect transition-all duration-500">
+              <div className="neuro-card p-6 rounded-2xl h-full hover:glow-effect transition-all duration-500">
                 {/* Category Header */}
                 <div className="flex items-center mb-6">
-                  <div className={`w-14 h-14 bg-gradient-to-r ${stack.color} rounded-2xl flex items-center justify-center mr-4 shadow-lg`}>
-                    <stack.icon className="w-7 h-7 text-white" />
+                  <div className={`w-12 h-12 bg-gradient-to-r ${stack.color} rounded-xl flex items-center justify-center mr-4 shadow-lg`}>
+                    <stack.icon className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="text-2xl font-heading font-bold">{stack.category}</h3>
+                  <h3 className="text-xl font-heading font-bold">{stack.category}</h3>
                 </div>
 
-                {/* Technologies Grid */}
-                <div className="flex flex-wrap gap-3">
-                  {stack.technologies.map((tech, techIndex) => (
-                    <motion.span
-                      key={tech}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ 
-                        duration: 0.3,
-                        delay: index * 0.2 + techIndex * 0.05 
-                      }}
-                      className="tech-badge neuro-inset px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-all duration-300 hover:text-primary"
-                    >
-                      {tech}
-                    </motion.span>
-                  ))}
+                {/* Technologies Carousel */}
+                <div className="min-h-[120px]">
+                  <TechCarousel 
+                    technologies={stack.technologies}
+                    speed={2500 + (index * 200)} // Different speeds for each category
+                    className="mb-4"
+                  />
+                  
+                  {/* Static preview of all technologies */}
+                  <div className="flex flex-wrap gap-2 mt-4 opacity-60">
+                    {stack.technologies.slice(0, 6).map((tech, techIndex) => (
+                      <span
+                        key={tech}
+                        className="text-xs px-2 py-1 bg-muted/20 rounded-md text-muted-foreground"
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                    {stack.technologies.length > 6 && (
+                      <span className="text-xs px-2 py-1 bg-muted/20 rounded-md text-muted-foreground">
+                        +{stack.technologies.length - 6} more
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>

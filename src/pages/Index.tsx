@@ -88,14 +88,14 @@ const Index = () => {
               
               {/* Explorer Section */}
               <div className="text-center relative">
-                <div className="glass-card p-12 rounded-3xl mb-8">
-                  <h2 className="text-8xl md:text-9xl font-heading font-black gradient-text tracking-wider opacity-90">
+                <div className="glass-card p-8 md:p-12 rounded-3xl mb-8">
+                  <h2 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-heading font-black gradient-text tracking-wider opacity-90 leading-none">
                     EXPLORER
                   </h2>
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 rounded-3xl blur-3xl"></div>
                 </div>
                 
-                <div className="text-sm text-muted-foreground/70">
+                <div className="text-sm text-muted-foreground/70 px-4">
                   <p>&copy; 2025 R Aditya Subramanyam. Crafted with passion and modern technologies.</p>
                 </div>
               </div>
