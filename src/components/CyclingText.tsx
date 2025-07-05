@@ -43,7 +43,6 @@ export const CyclingText = ({
 
   return (
     <TypingAnimation
-      key={key}
       text={texts[currentIndex]}
       className={className}
       delay={0}
