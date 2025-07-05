@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 
 const navLinks = [
   { name: 'Home', href: '#home' },
@@ -29,48 +30,47 @@ export const Navigation = () => {
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled 
-        ? 'glass-card backdrop-blur-md border-b border-white/10' 
-        : 'bg-transparent'
-    }`}>
-      <div className="container mx-auto px-6">
-        <div className="flex items-center justify-between h-16">
+    <motion.nav
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6 }}
+      className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50"
+    >
+      <div className={`transition-all duration-500 ${
+        isScrolled ? 'glass-header' : 'glass-card'
+      } rounded-2xl px-6 py-3`}>
+        <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="font-bold text-xl gradient-text">
+          <motion.div 
+            whileHover={{ scale: 1.05 }}
+            className="font-heading text-lg gradient-text cursor-pointer mr-8"
+          >
             Portfolio
-          </div>
+          </motion.div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <button
+          {/* Navigation Links */}
+          <div className="flex items-center space-x-1">
+            {navLinks.map((link, index) => (
+              <motion.button
                 key={link.name}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => scrollToSection(link.href)}
-                className={`relative px-3 py-2 text-sm font-medium transition-all duration-300 hover:text-primary ${
+                className={`relative px-3 py-2 text-xs font-medium transition-all duration-300 rounded-lg cursor-pointer ${
                   activeSection === link.href.slice(1) 
-                    ? 'text-primary' 
-                    : 'text-muted-foreground'
+                    ? 'text-primary bg-primary/10' 
+                    : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
                 }`}
               >
                 {link.name}
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary to-accent transform scale-x-0 transition-transform duration-300 hover:scale-x-100"></span>
-              </button>
+              </motion.button>
             ))}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <button className="glass-card p-2 rounded-lg">
-              <div className="w-6 h-6 flex flex-col justify-center space-y-1">
-                <span className="block w-full h-0.5 bg-foreground"></span>
-                <span className="block w-full h-0.5 bg-foreground"></span>
-                <span className="block w-full h-0.5 bg-foreground"></span>
-              </div>
-            </button>
           </div>
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 };

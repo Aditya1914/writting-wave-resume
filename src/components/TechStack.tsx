@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { Code, Server, Settings, Smartphone } from 'lucide-react';
 
 const techStacks = [
   {
@@ -7,7 +9,8 @@ const techStacks = [
       "React", "TypeScript", "Next.js", "Vue.js", "Angular", "Tailwind CSS", 
       "Sass", "JavaScript", "HTML5", "CSS3", "Redux", "Zustand"
     ],
-    color: "from-blue-500 to-cyan-500"
+    color: "from-blue-500 to-cyan-500",
+    icon: Code
   },
   {
     category: "Backend",
@@ -15,7 +18,8 @@ const techStacks = [
       "Node.js", "Express", "NestJS", "Python", "Django", "FastAPI", 
       "PostgreSQL", "MongoDB", "Redis", "GraphQL", "REST API", "Firebase"
     ],
-    color: "from-green-500 to-emerald-500"
+    color: "from-green-500 to-emerald-500",
+    icon: Server
   },
   {
     category: "DevOps & Tools",
@@ -23,7 +27,8 @@ const techStacks = [
       "Docker", "AWS", "Vercel", "Git", "GitHub Actions", "Jest", 
       "Cypress", "Webpack", "Vite", "ESLint", "Prettier", "Figma"
     ],
-    color: "from-purple-500 to-pink-500"
+    color: "from-purple-500 to-pink-500",
+    icon: Settings
   },
   {
     category: "Mobile & Others",
@@ -31,7 +36,8 @@ const techStacks = [
       "React Native", "Expo", "Flutter", "Electron", "Socket.io", 
       "WebRTC", "Stripe", "Auth0", "Supabase", "Prisma", "tRPC", "Zod"
     ],
-    color: "from-orange-500 to-red-500"
+    color: "from-orange-500 to-red-500",
+    icon: Smartphone
   }
 ];
 
@@ -65,70 +71,81 @@ export const TechStack = () => {
     <section className="py-20 relative">
       <div className="container mx-auto px-6">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold gradient-text mb-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-4xl lg:text-5xl font-heading font-bold gradient-text mb-4">
             Tech Stack
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-body">
             Technologies and tools I use to bring ideas to life
           </p>
-        </div>
+        </motion.div>
 
         {/* Tech Categories */}
         <div className="grid lg:grid-cols-2 gap-8">
           {techStacks.map((stack, index) => (
-            <div
+            <motion.div
               key={stack.category}
               ref={el => sectionRefs.current[index] = el}
-              className={`transition-all duration-1000 ${
-                visibleSections.includes(index) 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-8'
-              }`}
-              style={{ transitionDelay: `${index * 0.2}s` }}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.2 }}
+              whileHover={{ scale: 1.02 }}
+              className="h-full"
             >
-              <div className="glass-card p-8 rounded-2xl h-full">
+              <div className="neuro-card p-8 rounded-2xl h-full hover:glow-effect transition-all duration-500">
                 {/* Category Header */}
                 <div className="flex items-center mb-6">
-                  <div className={`w-12 h-12 bg-gradient-to-r ${stack.color} rounded-xl flex items-center justify-center mr-4`}>
-                    <div className="w-6 h-6 bg-white rounded-md"></div>
+                  <div className={`w-14 h-14 bg-gradient-to-r ${stack.color} rounded-2xl flex items-center justify-center mr-4 shadow-lg`}>
+                    <stack.icon className="w-7 h-7 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold">{stack.category}</h3>
+                  <h3 className="text-2xl font-heading font-bold">{stack.category}</h3>
                 </div>
 
                 {/* Technologies Grid */}
                 <div className="flex flex-wrap gap-3">
                   {stack.technologies.map((tech, techIndex) => (
-                    <span
+                    <motion.span
                       key={tech}
-                      className={`tech-badge transition-all duration-300 ${
-                        visibleSections.includes(index) ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-                      }`}
-                      style={{ 
-                        transitionDelay: `${index * 0.2 + techIndex * 0.05}s` 
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ 
+                        duration: 0.3,
+                        delay: index * 0.2 + techIndex * 0.05 
                       }}
+                      className="tech-badge neuro-inset px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-all duration-300 hover:text-primary"
                     >
                       {tech}
-                    </span>
+                    </motion.span>
                   ))}
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {/* Skills Highlight */}
-        <div className="mt-16 text-center">
-          <div className="glass-card p-8 rounded-2xl max-w-4xl mx-auto">
-            <h3 className="text-2xl font-bold mb-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+          className="mt-16 text-center"
+        >
+          <div className="glass-card p-8 rounded-2xl max-w-4xl mx-auto hover:glow-effect transition-all duration-500">
+            <h3 className="text-2xl font-heading font-bold mb-4">
               Always Learning & Growing
             </h3>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-lg font-body">
               I'm constantly exploring new technologies and improving my skills. 
               Currently diving deep into AI/ML integration, WebAssembly, and advanced cloud architectures.
             </p>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
