@@ -29,21 +29,26 @@ export const CyclingText = ({
   }, [delay]);
 
   useEffect(() => {
-    if (!started) return;
+    if (!started || texts.length === 0) return;
+
+    const currentText = texts[currentIndex] || "";
+    const typingDuration = currentText.length * typingSpeed;
+    const totalDuration = typingDuration + pauseDuration;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % texts.length);
-      setKey(prev => prev + 1);
-    }, pauseDuration + (texts[currentIndex]?.length || 0) * typingSpeed + 1000);
+      setKey(prev => prev + 1); // Force remount of TypingAnimation
+    }, totalDuration);
 
     return () => clearInterval(interval);
   }, [started, texts, currentIndex, typingSpeed, pauseDuration]);
 
-  if (!started) return null;
+  if (!started || texts.length === 0) return null;
 
   return (
     <TypingAnimation
-      text={texts[currentIndex]}
+      key={key} // This forces a complete remount and restart
+      text={texts[currentIndex] || ""}
       className={className}
       delay={0}
       speed={typingSpeed}
