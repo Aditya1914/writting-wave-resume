@@ -51,7 +51,7 @@ npm install
 npm run dev
 ```
 
-The site will be available at http://localhost:8080
+The site will be available at https://writting-wave-resume.vercel.app/
 
 ### Building for Production
 
