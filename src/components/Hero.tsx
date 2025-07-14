@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { TypingAnimation } from './TypingAnimation';
 import { CyclingText } from './CyclingText';
-const profileImage = '/lovable-uploads/5ea1a67a-9081-413e-8455-01173b7f5154.png';
 import { Github, Linkedin, Twitter, Mail } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import profileHeroImage from '../assets/profile-hero.png';
+
+// Use imported image for proper Vite handling
+const profileImage = profileHeroImage;
 
 export const Hero = () => {
   const [showDesignation, setShowDesignation] = useState(false);
