@@ -11,47 +11,79 @@ const navLinks = [
   { name: 'Contact', href: '#contact' }
 ];
 
+// Simple, optimized smooth scroll function
+function smoothScrollTo(targetY: number, duration: number): void {
+  // Cancel any ongoing animations
+  if (window.smoothScrollAnimationId) {
+    window.cancelAnimationFrame(window.smoothScrollAnimationId);
+  }
+
+  const startingY = window.scrollY;
+  const diff = targetY - startingY;
+  let start: number;
+
+  // Easing function
+  const easeInOutQuad = (t: number): number => {
+    return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  };
+
+  function step(timestamp: number) {
+    if (!start) start = timestamp;
+    const time = timestamp - start;
+    const percent = Math.min(time / duration, 1);
+    const easedPercent = easeInOutQuad(percent);
+    
+    window.scrollTo(0, startingY + diff * easedPercent);
+
+    if (time < duration) {
+      window.smoothScrollAnimationId = window.requestAnimationFrame(step);
+    }
+  }
+
+  window.smoothScrollAnimationId = window.requestAnimationFrame(step);
+}
+
+// Augment Window interface
+declare global {
+  interface Window {
+    smoothScrollAnimationId?: number;
+  }
+}
+
 export const Navigation = () => {
   const [activeSection, setActiveSection] = useState('home');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
   const [isScrolling, setIsScrolling] = useState(false);
-  const scrollTimeoutRef = useRef<number | null>(null);
-  const [showOverlay, setShowOverlay] = useState(false);
   
-  // Preload sections for smoother navigation
+  // Optimize the website for smooth scrolling
   useEffect(() => {
-    // Force browser to calculate layout for all sections
-    navLinks.forEach(link => {
-      const section = document.querySelector(link.href);
+    // Force early layout calculations
+    const sections = navLinks.map(link => document.querySelector(link.href));
+    sections.forEach(section => {
       if (section) {
-        // This will force layout calculation
-        section.getBoundingClientRect();
+        (section as HTMLElement).getBoundingClientRect();
       }
     });
 
-    // Add CSS for better scroll performance
+    // Default to auto scroll behavior (we'll handle smooth scrolling ourselves)
     document.documentElement.style.scrollBehavior = 'auto';
     
-    // Add hardware acceleration to main content container
-    const contentContainer = document.querySelector('.screen-container');
-    if (contentContainer) {
-      (contentContainer as HTMLElement).style.transform = 'translateZ(0)';
-      (contentContainer as HTMLElement).style.backfaceVisibility = 'hidden';
-    }
-    
     return () => {
+      // Reset scroll behavior
       document.documentElement.style.scrollBehavior = '';
-      if (contentContainer) {
-        (contentContainer as HTMLElement).style.transform = '';
-        (contentContainer as HTMLElement).style.backfaceVisibility = '';
+      
+      // Cancel any ongoing animations
+      if (window.smoothScrollAnimationId) {
+        window.cancelAnimationFrame(window.smoothScrollAnimationId);
       }
     };
   }, []);
 
   useEffect(() => {
     const handleScroll = () => {
+      // Update navbar appearance based on scroll position
       setIsScrolled(window.scrollY > 50);
       
       // Don't update active section during programmatic scrolling
@@ -61,9 +93,9 @@ export const Navigation = () => {
       const sections = navLinks.map(link => document.querySelector(link.href));
       const scrollPosition = window.scrollY + 100;
       
-      let currentSection = ''; // Start with empty, let detection find the right one
+      // Find the current section
+      let currentSection = '';
       
-      // Check each section to find which one we're currently in
       sections.forEach((section, index) => {
         if (section) {
           const offsetTop = (section as HTMLElement).offsetTop;
@@ -105,15 +137,6 @@ export const Navigation = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isScrolling]);
 
-  // Clear the timeout on unmount to avoid memory leaks
-  useEffect(() => {
-    return () => {
-      if (scrollTimeoutRef.current) {
-        window.clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, []);
-
   // Close mobile menu when clicking outside or on link
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -136,66 +159,36 @@ export const Navigation = () => {
     };
   }, [isMobileMenuOpen]);
 
-  // Manual scroll implementation to avoid browser inconsistencies
+  // Ultra-smooth scroll implementation for Vercel
   const scrollToSection = (href: string) => {
     const element = document.querySelector(href);
-    if (element) {
-      // Clear any existing scroll timeout
-      if (scrollTimeoutRef.current) {
-        window.clearTimeout(scrollTimeoutRef.current);
-      }
-      
-      // First update the UI to indicate where we're going
-      setActiveSection(href.slice(1));
-      
-      // Set scrolling flag to prevent jittering of active indicator
-      setIsScrolling(true);
-      
-      // Show transition overlay on non-mobile only
-      if (!isMobile) {
-        setShowOverlay(true);
-      }
-      
-      // Get the element position
-      const rect = element.getBoundingClientRect();
-      const offsetTop = rect.top + window.scrollY;
-      
-      // Calculate scroll offset (for navigation bar)
-      const offset = 80; // Adjust based on your navbar height
-      
-      // Wait a tiny bit for the overlay to appear
-      setTimeout(() => {
-        // For desktop, use a more direct approach
-        if (!isMobile) {
-          // Disable smooth scrolling temporarily for instant movement
-          document.documentElement.style.scrollBehavior = 'auto';
-          window.scrollTo(0, offsetTop - offset);
-          
-          // Re-enable smooth scrolling after a small delay
-          scrollTimeoutRef.current = window.setTimeout(() => {
-            document.documentElement.style.scrollBehavior = '';
-            setIsScrolling(false);
-            // Hide overlay after scrolling is done
-            setShowOverlay(false);
-          }, 100);
-        } else {
-          // For mobile, use smooth scrolling
-          document.documentElement.style.scrollBehavior = 'smooth';
-          window.scrollTo({
-            top: offsetTop - offset,
-            behavior: 'smooth'
-          });
-          
-          scrollTimeoutRef.current = window.setTimeout(() => {
-            setIsScrolling(false);
-            document.documentElement.style.scrollBehavior = '';
-          }, 1000);
-        }
-      }, 10);
-      
-      // Close mobile menu
-      setIsMobileMenuOpen(false);
-    }
+    if (!element) return;
+
+    // Update the UI first for responsive feedback
+    setActiveSection(href.slice(1));
+    setIsScrolling(true);
+    
+    // Get the element position with offset for navbar
+    const rect = element.getBoundingClientRect();
+    const offsetTop = rect.top + window.pageYOffset;
+    const navbarOffset = 80; // Adjust based on navbar height
+    
+    // Calculate duration based on distance (faster for shorter distances)
+    const distance = Math.abs(window.pageYOffset - (offsetTop - navbarOffset));
+    const minDuration = 400; // Minimum duration in ms
+    const baseDuration = isMobile ? 600 : 800; // Base duration for each platform
+    const duration = Math.min(minDuration + distance * 0.2, baseDuration);
+    
+    // Perform the smooth scroll with our custom implementation
+    smoothScrollTo(offsetTop - navbarOffset, duration);
+    
+    // Reset scrolling state after animation completes
+    setTimeout(() => {
+      setIsScrolling(false);
+    }, duration + 50);
+    
+    // Close mobile menu
+    setIsMobileMenuOpen(false);
   };
 
   const toggleMobileMenu = () => {
@@ -204,29 +197,6 @@ export const Navigation = () => {
 
   return (
     <>
-      {/* Transition Overlay - Only shown during navigation */}
-      <AnimatePresence>
-        {showOverlay && !isMobile && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(10, 10, 15, 0.8)',
-              backdropFilter: 'blur(5px)',
-              zIndex: 45,
-              pointerEvents: 'none'
-            }}
-          />
-        )}
-      </AnimatePresence>
-
       <motion.nav
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}

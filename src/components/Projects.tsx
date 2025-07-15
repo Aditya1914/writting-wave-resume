@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Github, Link } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { motion } from 'framer-motion';
 // Import the sorting visualizer image
 import sortingVisualizerImg from '@/assets/sorting_visualizer.png';
 
-// Network Grid Component
+// Optimized Network Grid Component
 const NetworkGrid = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
@@ -13,6 +14,20 @@ const NetworkGrid = () => {
   const mouseRef = useRef({ x: 0, y: 0, isInside: false });
   const projectCardsRef = useRef<HTMLElement[]>([]);
   const isMobile = useIsMobile();
+  const isVisibleRef = useRef(false);
+  const lastUpdateTimeRef = useRef(0);
+  const measurementIntervalRef = useRef<number | null>(null);
+
+  // Throttle card position updates for better performance
+  const updateProjectCards = () => {
+    const now = Date.now();
+    // Only update card positions every 1000ms
+    if (now - lastUpdateTimeRef.current > 1000) {
+      lastUpdateTimeRef.current = now;
+      const cards = document.querySelectorAll('.project-card');
+      projectCardsRef.current = Array.from(cards) as HTMLElement[];
+    }
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -31,44 +46,52 @@ const NetworkGrid = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-          // Mouse tracking (disabled on mobile for performance)
-      const handleMouseMove = (e: MouseEvent) => {
-        if (!isMobile) {
-          const rect = canvas.getBoundingClientRect();
-          mouseRef.current = {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top,
-            isInside: true
-          };
-        }
-      };
-
-      const handleMouseLeave = () => {
-        mouseRef.current.isInside = false;
-      };
-
+    // Mouse tracking (disabled on mobile for performance)
+    const handleMouseMove = (e: MouseEvent) => {
       if (!isMobile) {
-        canvas.addEventListener('mousemove', handleMouseMove);
-        canvas.addEventListener('mouseleave', handleMouseLeave);
+        const rect = canvas.getBoundingClientRect();
+        mouseRef.current = {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+          isInside: true
+        };
       }
-
-    // Get project card positions for electromagnetic fields
-    const updateProjectCards = () => {
-      const cards = document.querySelectorAll('.project-card');
-      projectCardsRef.current = Array.from(cards) as HTMLElement[];
     };
 
-    updateProjectCards();
+    const handleMouseLeave = () => {
+      mouseRef.current.isInside = false;
+    };
 
-    // Create nodes with mobile optimization
+    if (!isMobile) {
+      canvas.addEventListener('mousemove', handleMouseMove);
+      canvas.addEventListener('mouseleave', handleMouseLeave);
+    }
+
+    // Initialize project cards
+    updateProjectCards();
+    
+    // Set up periodic measurement to avoid constant DOM reads
+    measurementIntervalRef.current = window.setInterval(updateProjectCards, 1000);
+
+    // Create nodes with fewer nodes for better performance
     const createNodes = () => {
       const nodes = [];
-      const spacing = isMobile ? 120 : 100; // Wider spacing on mobile for performance
+      // Increase spacing to reduce total node count
+      const spacing = isMobile ? 150 : 120; 
       const cols = Math.ceil(canvas.offsetWidth / spacing) + 1;
       const rows = Math.ceil(canvas.offsetHeight / spacing) + 1;
 
+      // Limit the maximum number of nodes for performance
+      const maxNodes = isMobile ? 50 : 100;
+      let count = 0;
+
       for (let i = 0; i < cols; i++) {
         for (let j = 0; j < rows; j++) {
+          if (count >= maxNodes) break;
+          
+          // Skip some nodes for a more natural pattern
+          if (Math.random() > 0.8) continue;
+          
           nodes.push({
             x: i * spacing + (Math.random() - 0.5) * (isMobile ? 20 : 30),
             y: j * spacing + (Math.random() - 0.5) * (isMobile ? 20 : 30),
@@ -80,12 +103,14 @@ const NetworkGrid = () => {
             lastActivation: 0,
             magneticForce: { x: 0, y: 0 }
           });
+          count++;
         }
+        if (count >= maxNodes) break;
       }
       return nodes;
     };
 
-    // Create particles for data flow
+    // Create particles for data flow (simplified)
     const createParticles = () => {
       return [];
     };
@@ -93,8 +118,23 @@ const NetworkGrid = () => {
     nodesRef.current = createNodes();
     particlesRef.current = createParticles();
 
-    // Animation loop
+    // Check if component is in viewport
+    const observer = new IntersectionObserver(
+      (entries) => {
+        isVisibleRef.current = entries[0].isIntersecting;
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(canvas);
+
+    // Optimized animation loop
     const animate = (time: number) => {
+      // Skip rendering when not visible
+      if (!isVisibleRef.current) {
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
+      
       ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
 
       const nodes = nodesRef.current;
@@ -116,8 +156,9 @@ const NetworkGrid = () => {
           }
         }
 
-        // Project card electromagnetic fields
-        projectCardsRef.current.forEach(card => {
+        // Project card electromagnetic fields (with fewer calculations)
+        // Only process first 4 cards for better performance
+        projectCardsRef.current.slice(0, 4).forEach(card => {
           const rect = card.getBoundingClientRect();
           const canvasRect = canvas.getBoundingClientRect();
           const cardX = rect.left - canvasRect.left + rect.width / 2;
@@ -139,15 +180,15 @@ const NetworkGrid = () => {
         node.magneticForce.x *= 0.85;
         node.magneticForce.y *= 0.85;
         
-        // Floating animation + magnetic forces
-        const floatX = Math.sin(time * 0.001 + node.pulsePhase) * 8;
-        const floatY = Math.cos(time * 0.0015 + node.pulsePhase) * 5;
-        node.x = node.originalX + floatX + node.magneticForce.x * 20;
-        node.y = node.originalY + floatY + node.magneticForce.y * 20;
+        // Floating animation + magnetic forces (increased movement)
+        const floatX = Math.sin(time * 0.0015 + node.pulsePhase) * 12;
+        const floatY = Math.cos(time * 0.002 + node.pulsePhase) * 8;
+        node.x = node.originalX + floatX + node.magneticForce.x * 25;
+        node.y = node.originalY + floatY + node.magneticForce.y * 25;
       });
 
-      // Neural activation waves (reduced frequency on mobile)
-      if (time % (isMobile ? 5000 : 3000) < 100) {
+      // Neural activation waves (increased frequency for more intensity)
+      if (time % (isMobile ? 4000 : 3000) < 100) {
         const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
         randomNode.activationLevel = 1;
         randomNode.lastActivation = time;
@@ -173,84 +214,52 @@ const NetworkGrid = () => {
       });
 
       // Draw connections with enhanced effects
+      // Use fewer connections for better performance
       nodes.forEach((node, i) => {
-        nodes.slice(i + 1).forEach(otherNode => {
+        // Only connect to nearest nodes, not all nodes
+        const nearestNodes = nodes
+          .slice(i + 1)
+          .filter((otherNode) => {
+            const dx = node.x - otherNode.x;
+            const dy = node.y - otherNode.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            return distance < 150;
+          })
+          .slice(0, isMobile ? 2 : 4); // Limit connections per node
+
+        nearestNodes.forEach(otherNode => {
           const dx = node.x - otherNode.x;
           const dy = node.y - otherNode.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
-          if (distance < 150) {
-            const opacity = (1 - distance / 150) * 0.2; // Reduced from 0.4
-            const highlight = Math.sin(time * 0.002 + node.pulsePhase) * 0.2 + 0.2; // Reduced intensity
-            const activation = Math.max(node.activationLevel, otherNode.activationLevel);
-            
-            ctx.beginPath();
-            ctx.moveTo(node.x, node.y);
-            ctx.lineTo(otherNode.x, otherNode.y);
-            
-            // More subtle gradient with less pink
-            const gradient = ctx.createLinearGradient(node.x, node.y, otherNode.x, otherNode.y);
-            const baseOpacity = opacity * highlight;
-            const activatedOpacity = baseOpacity + activation * 0.3; // Reduced from 0.8
-            
-            gradient.addColorStop(0, `rgba(120, 119, 198, ${activatedOpacity})`);
-            gradient.addColorStop(0.5, `rgba(160, 140, 220, ${activatedOpacity * 0.8})`); // Less intense pink
-            gradient.addColorStop(1, `rgba(120, 119, 198, ${activatedOpacity})`);
-            
-            ctx.strokeStyle = gradient;
-            ctx.lineWidth = 1 + activation * 1; // Reduced line width
-            ctx.stroke();
-
-            // Create particles along strong connections (fewer on mobile)
-            if (Math.random() < (isMobile ? 0.001 : 0.002) && distance < 100) { // Reduced particle frequency
-              particles.push({
-                x: node.x,
-                y: node.y,
-                targetX: otherNode.x,
-                targetY: otherNode.y,
-                progress: 0,
-                life: 1,
-                speed: 0.02 + Math.random() * 0.03,
-                size: 2 + Math.random() * 3
-              });
-            }
-          }
+          const opacity = (1 - distance / 150) * 0.4; // Increased base opacity
+          const highlight = Math.sin(time * 0.003 + node.pulsePhase) * 0.3 + 0.3; // More pronounced highlight
+          const activation = Math.max(node.activationLevel, otherNode.activationLevel);
+          
+          ctx.beginPath();
+          ctx.moveTo(node.x, node.y);
+          ctx.lineTo(otherNode.x, otherNode.y);
+          
+          // Enhanced gradient with more intensity
+          const gradient = ctx.createLinearGradient(node.x, node.y, otherNode.x, otherNode.y);
+          const baseOpacity = opacity * highlight;
+          const activatedOpacity = baseOpacity + activation * 0.5; // Increased activation visibility
+          
+          gradient.addColorStop(0, `rgba(120, 119, 198, ${activatedOpacity})`);
+          gradient.addColorStop(0.5, `rgba(160, 140, 220, ${activatedOpacity * 0.8})`);
+          gradient.addColorStop(1, `rgba(120, 119, 198, ${activatedOpacity})`);
+          
+          ctx.strokeStyle = gradient;
+          ctx.lineWidth = 1.5 + activation * 2; // Thicker lines with more variation
+          ctx.stroke();
         });
       });
 
-      // Update and draw particles
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const particle = particles[i];
-        particle.progress += particle.speed;
-        particle.life -= 0.01;
-
-        if (particle.progress >= 1 || particle.life <= 0) {
-          particles.splice(i, 1);
-          continue;
-        }
-
-        // Interpolate position
-        particle.x = particle.x + (particle.targetX - particle.x) * particle.progress;
-        particle.y = particle.y + (particle.targetY - particle.y) * particle.progress;
-
-        // Draw particle with trail
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${particle.life * 0.8})`;
-        ctx.fill();
-
-        // Particle glow
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size * 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(160, 140, 220, ${particle.life * 0.15})`; // Reduced from 0.3 and less intense color
-        ctx.fill();
-      }
-
-      // Draw enhanced nodes
+      // Draw enhanced nodes with increased intensity
       nodes.forEach(node => {
-        const pulse = Math.sin(time * 0.003 + node.pulsePhase) * 0.5 + 0.5;
-        const baseSize = 2 + pulse * 2;
-        const activationSize = baseSize + node.activationLevel * 6;
+        const pulse = Math.sin(time * 0.004 + node.pulsePhase) * 0.6 + 0.6; // Faster, more pronounced pulse
+        const baseSize = 2.5 + pulse * 3; // Larger base size and pulse range
+        const activationSize = baseSize + node.activationLevel * 8; // More dramatic activation growth
         
         // Mouse proximity glow
         let proximityGlow = 0;
@@ -261,53 +270,25 @@ const NetworkGrid = () => {
           proximityGlow = Math.max(0, (100 - distance) / 100);
         }
         
-        // Main node
+        // Main node with enhanced visibility
         ctx.beginPath();
         ctx.arc(node.x, node.y, activationSize, 0, Math.PI * 2);
-        const nodeOpacity = 0.4 + pulse * 0.4 + node.activationLevel * 0.6 + proximityGlow * 0.5;
+        const nodeOpacity = 0.5 + pulse * 0.5 + node.activationLevel * 0.8 + proximityGlow * 0.6; // Increased opacity
         ctx.fillStyle = `rgba(120, 119, 198, ${nodeOpacity})`;
         ctx.fill();
         
-        // Enhanced glow for special nodes
-        if (node.connectionStrength > 0.7 || node.activationLevel > 0.3 || proximityGlow > 0.3) {
+        // Enhanced glow with lower threshold for more visible effects
+        if (node.activationLevel > 0.2 || proximityGlow > 0.3) {
           ctx.beginPath();
-          ctx.arc(node.x, node.y, activationSize * 2.5, 0, Math.PI * 2); // Reduced from * 3
-          const glowOpacity = (pulse + node.activationLevel + proximityGlow) * 0.1; // Reduced from 0.2
-          ctx.fillStyle = `rgba(160, 140, 220, ${glowOpacity})`; // Less intense color
+          ctx.arc(node.x, node.y, activationSize * 2.5, 0, Math.PI * 2); // Larger glow radius
+          const glowOpacity = (pulse + node.activationLevel + proximityGlow) * 0.15; // Brighter glow
+          ctx.fillStyle = `rgba(160, 140, 220, ${glowOpacity})`;
           ctx.fill();
-          
-          // Super glow for activated nodes
-          if (node.activationLevel > 0.5) {
-            ctx.beginPath();
-            ctx.arc(node.x, node.y, activationSize * 3, 0, Math.PI * 2); // Reduced from * 5
-            ctx.fillStyle = `rgba(255, 255, 255, ${node.activationLevel * 0.05})`; // Reduced from 0.1
-            ctx.fill();
-          }
         }
       });
 
-      // Enhanced field visualization to cover entire canvas
-      projectCardsRef.current.forEach(card => {
-        const rect = card.getBoundingClientRect();
-        const canvasRect = canvas.getBoundingClientRect();
-        const cardX = rect.left - canvasRect.left + rect.width / 2;
-        const cardY = rect.top - canvasRect.top + rect.height / 2;
-        
-        // Draw subtle field rings with reduced coverage
-        for (let ring = 1; ring <= 2; ring++) { // Reduced from 4 to 2 rings
-          const radius = ring * 50; // Reduced from 70
-          const opacity = (3 - ring) * 0.02 * Math.sin(time * 0.003 + ring); // Reduced opacity
-          
-          ctx.beginPath();
-          ctx.arc(cardX, cardY, radius, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(120, 119, 198, ${Math.abs(opacity)})`;
-          ctx.lineWidth = 0.5; // Reduced from 0.8
-          ctx.stroke();
-        }
-      });
-
-      // Removed the bottom gradient overlay that was creating the dense pink pattern
-
+      // Skip field visualization for better performance
+      
       animationRef.current = requestAnimationFrame(animate);
     };
 
@@ -322,6 +303,10 @@ const NetworkGrid = () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
+      observer.disconnect();
+      if (measurementIntervalRef.current) {
+        clearInterval(measurementIntervalRef.current);
+      }
     };
   }, [isMobile]);
 
@@ -329,7 +314,7 @@ const NetworkGrid = () => {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ opacity: isMobile ? 0.5 : 0.7 }}
+      style={{ opacity: isMobile ? 0.7 : 0.9 }} // Increased overall canvas opacity
     />
   );
 };
@@ -392,33 +377,31 @@ const projects = [
 ];
 
 export const Projects = () => {
-  const [visibleCards, setVisibleCards] = useState<number[]>([]);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const isMobile = useIsMobile();
 
-  useEffect(() => {
-    setVisibleCards([]);
-    
-    const observers = cardRefs.current.map((ref, index) => {
-      if (!ref) return null;
-      
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setVisibleCards(prev => [...prev, index]);
-          }
-        },
-        { threshold: isMobile ? 0.1 : 0.2 }
-      );
-      
-      observer.observe(ref);
-      return observer;
-    });
+  // Container animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
 
-    return () => {
-      observers.forEach(observer => observer?.disconnect());
-    };
-  }, [projects, isMobile]);
+  // Item animation variants
+  const itemVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0 }
+  };
+
+  // Header animation
+  const headerVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0 }
+  };
 
   return (
     <section className="py-12 sm:py-16 lg:py-20 relative overflow-hidden">
@@ -432,41 +415,51 @@ export const Projects = () => {
       
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
         {/* Section Header */}
-        <div className="text-center mb-12 sm:mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold gradient-text mb-3 sm:mb-4">
+        <motion.div 
+          initial="hidden"
+          animate="visible"
+          variants={headerVariants}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-12 sm:mb-16 overflow-visible"
+        >
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold gradient-text mb-4 sm:mb-6 leading-tight pb-2">
             Projects
           </h2>
-          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-8 px-4">
+          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-8 px-4 leading-relaxed">
             A showcase of my recent work and creative solutions
           </p>
-        </div>
+        </motion.div>
 
         {/* Projects Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+        <motion.div 
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
+        >
           {projects.map((project, index) => (
-            <div
+            <motion.div
               key={project.id}
-              ref={el => cardRefs.current[index] = el}
-              className={`project-card transition-all duration-1000 ${
-                visibleCards.includes(index) 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-8'
-              }`}
-              style={{ transitionDelay: `${index * 0.1}s` }}
+              className="project-card"
+              variants={itemVariants}
+              whileHover={!isMobile ? { scale: 1.02, y: -5 } : {}}
+              transition={{ duration: 0.3 }}
             >
-              {/* Project Image */}
+              {/* Project Image - removed transition classes that could conflict */}
               <div className="relative overflow-hidden rounded-lg sm:rounded-xl mb-4 sm:mb-6 group">
                 <img 
                   src={project.image} 
                   alt={project.title}
-                  className="w-full h-40 sm:h-48 object-cover transition-transform duration-300 group-hover:scale-110"
-                  loading="lazy"
+                  className="w-full h-40 sm:h-48 object-cover group-hover:scale-110"
+                  style={{ transition: "transform 0.3s ease" }}
+                  loading="eager"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100" 
+                     style={{ transition: "opacity 0.3s ease" }}>
                   <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 flex gap-2">
                     <a
                       href={project.githubUrl}
-                      className="glass-card p-2 rounded-lg hover:glow-effect transition-all duration-300 touch-spacing"
+                      className="glass-card p-2 rounded-lg hover:glow-effect touch-spacing"
                       aria-label="View on GitHub"
                       onClick={(e) => e.preventDefault()} // Prevent actual navigation for demo
                     >
@@ -474,7 +467,7 @@ export const Projects = () => {
                     </a>
                     <a
                       href={project.liveUrl}
-                      className="glass-card p-2 rounded-lg hover:glow-effect transition-all duration-300 touch-spacing"
+                      className="glass-card p-2 rounded-lg hover:glow-effect touch-spacing"
                       aria-label="View Live Demo"
                       onClick={(e) => e.preventDefault()} // Prevent actual navigation for demo
                     >
@@ -486,7 +479,8 @@ export const Projects = () => {
 
               {/* Project Info */}
               <div className="space-y-3 sm:space-y-4">
-                <h3 className="text-lg sm:text-xl font-bold group-hover:gradient-text transition-all duration-300">
+                <h3 className="text-lg sm:text-xl font-bold hover:gradient-text" 
+                    style={{ transition: "color 0.3s ease" }}>
                   {project.title}
                 </h3>
                 
@@ -510,13 +504,13 @@ export const Projects = () => {
                 {isMobile && (
                   <div className="flex gap-2 pt-2">
                     <button 
-                      className="flex-1 glass-card px-3 py-2 rounded-lg font-medium text-xs hover:glow-effect transition-all duration-300"
+                      className="flex-1 glass-card px-3 py-2 rounded-lg font-medium text-xs hover:glow-effect"
                       onClick={(e) => e.preventDefault()}
                     >
                       View Code
                     </button>
                     <button 
-                      className="flex-1 bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 text-primary font-medium py-2 px-3 rounded-lg text-xs transition-all duration-300"
+                      className="flex-1 bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 text-primary font-medium py-2 px-3 rounded-lg text-xs"
                       onClick={(e) => e.preventDefault()}
                     >
                       Live Demo
@@ -524,9 +518,9 @@ export const Projects = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
