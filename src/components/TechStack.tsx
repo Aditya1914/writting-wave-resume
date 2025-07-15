@@ -8,8 +8,8 @@ const techStacks = [
   {
     category: "Frontend",
     technologies: [
-      "React", "TypeScript", "Next.js", "Vue.js", "Angular", "Tailwind CSS", 
-      "Sass", "JavaScript", "HTML5", "CSS3", "Redux", "Zustand"
+      "React", "TypeScript", "Next.js", "Tailwind CSS", 
+      "JavaScript", "HTML5", "CSS3", "Redux", "Zustand", "Shadcn UI", "Vercel"
     ],
     color: "from-blue-500 to-cyan-500",
     icon: Code
@@ -18,7 +18,7 @@ const techStacks = [
     category: "Backend",
     technologies: [
       "Node.js", "Express", "NestJS", "Python",
-      "PostgreSQL", "MongoDB", "Redis", "GraphQL", "REST API", "Firebase"
+      "PostgreSQL", "MongoDB", "Redis", "GraphQL", "REST API", "Supabase"
     ],
     color: "from-green-500 to-emerald-500",
     icon: Server
@@ -26,8 +26,8 @@ const techStacks = [
   {
     category: "DevOps & Tools",
     technologies: [
-      "Docker", "AWS", "Vercel", "Git", "GitHub Actions", "Jest", 
-      "Cypress", "Webpack", "Vite", "ESLint", "Prettier", "Figma"
+      "Docker", "AWS", "Vercel", "Git", "GitHub Actions", "Framer", 
+      "Netlify", "Webpack", "Vite", "ESLint", "Prettier", "Figma"
     ],
     color: "from-purple-500 to-pink-500",
     icon: Settings
@@ -35,7 +35,7 @@ const techStacks = [
   {
     category: "Mobile & Others",
     technologies: [
-      "React Native", "Expo", "Flutter", "Electron", "Socket.io", 
+      "React Native", "Socket.io", 
       "WebRTC", "Stripe", "Auth0", "Supabase", "Prisma", "tRPC", "Zod"
     ],
     color: "from-orange-500 to-red-500",
