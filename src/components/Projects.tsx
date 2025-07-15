@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Github, Link } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+// Import the sorting visualizer image
+import sortingVisualizerImg from '@/assets/sorting_visualizer.png';
 
 // Network Grid Component
 const NetworkGrid = () => {
@@ -362,12 +364,12 @@ const projects = [
   },
   {
     id: 4,
-    title: "Data Visualization Dashboard",
-    description: "Interactive dashboard for complex data analysis with real-time updates and custom charts.",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop",
-    technologies: ["Vue.js", "D3.js", "Python", "FastAPI"],
-    githubUrl: "#",
-    liveUrl: "#"
+    title: "Sorting Visualizer",
+    description: "Web based sorting visualizer with real-time bar chart animations, JavaScript controls, C++ code samples, and complexity metrics.",
+    image: sortingVisualizerImg,
+    technologies: ["React", "JavaScript", "C++"],
+    githubUrl: "https://github.com/Aditya1914/Sorting_Visualizer",
+    liveUrl: "https://sorting-visualizer-lovat-mu.vercel.app/"
   },
   {
     id: 5,

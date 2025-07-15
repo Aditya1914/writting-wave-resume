@@ -18,6 +18,7 @@ export const Navigation = () => {
   const isMobile = useIsMobile();
   const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeoutRef = useRef<number | null>(null);
+  const [showOverlay, setShowOverlay] = useState(false);
   
   // Preload sections for smoother navigation
   useEffect(() => {
@@ -29,6 +30,24 @@ export const Navigation = () => {
         section.getBoundingClientRect();
       }
     });
+
+    // Add CSS for better scroll performance
+    document.documentElement.style.scrollBehavior = 'auto';
+    
+    // Add hardware acceleration to main content container
+    const contentContainer = document.querySelector('.screen-container');
+    if (contentContainer) {
+      (contentContainer as HTMLElement).style.transform = 'translateZ(0)';
+      (contentContainer as HTMLElement).style.backfaceVisibility = 'hidden';
+    }
+    
+    return () => {
+      document.documentElement.style.scrollBehavior = '';
+      if (contentContainer) {
+        (contentContainer as HTMLElement).style.transform = '';
+        (contentContainer as HTMLElement).style.backfaceVisibility = '';
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -117,6 +136,7 @@ export const Navigation = () => {
     };
   }, [isMobileMenuOpen]);
 
+  // Manual scroll implementation to avoid browser inconsistencies
   const scrollToSection = (href: string) => {
     const element = document.querySelector(href);
     if (element) {
@@ -131,6 +151,11 @@ export const Navigation = () => {
       // Set scrolling flag to prevent jittering of active indicator
       setIsScrolling(true);
       
+      // Show transition overlay on non-mobile only
+      if (!isMobile) {
+        setShowOverlay(true);
+      }
+      
       // Get the element position
       const rect = element.getBoundingClientRect();
       const offsetTop = rect.top + window.scrollY;
@@ -138,20 +163,35 @@ export const Navigation = () => {
       // Calculate scroll offset (for navigation bar)
       const offset = 80; // Adjust based on your navbar height
       
-      // Pre-render the target area to avoid white flashes
-      document.documentElement.style.scrollBehavior = 'smooth';
-      
-      // Use immediate scroll to update the position 
-      window.scrollTo({
-        top: offsetTop - offset,
-        behavior: 'smooth'
-      });
-      
-      // Reset scrolling flag after animation completes with a longer timeout for production
-      scrollTimeoutRef.current = window.setTimeout(() => {
-        setIsScrolling(false);
-        document.documentElement.style.scrollBehavior = '';
-      }, 1200); // Longer duration to ensure scroll completes in production
+      // Wait a tiny bit for the overlay to appear
+      setTimeout(() => {
+        // For desktop, use a more direct approach
+        if (!isMobile) {
+          // Disable smooth scrolling temporarily for instant movement
+          document.documentElement.style.scrollBehavior = 'auto';
+          window.scrollTo(0, offsetTop - offset);
+          
+          // Re-enable smooth scrolling after a small delay
+          scrollTimeoutRef.current = window.setTimeout(() => {
+            document.documentElement.style.scrollBehavior = '';
+            setIsScrolling(false);
+            // Hide overlay after scrolling is done
+            setShowOverlay(false);
+          }, 100);
+        } else {
+          // For mobile, use smooth scrolling
+          document.documentElement.style.scrollBehavior = 'smooth';
+          window.scrollTo({
+            top: offsetTop - offset,
+            behavior: 'smooth'
+          });
+          
+          scrollTimeoutRef.current = window.setTimeout(() => {
+            setIsScrolling(false);
+            document.documentElement.style.scrollBehavior = '';
+          }, 1000);
+        }
+      }, 10);
       
       // Close mobile menu
       setIsMobileMenuOpen(false);
@@ -164,6 +204,29 @@ export const Navigation = () => {
 
   return (
     <>
+      {/* Transition Overlay - Only shown during navigation */}
+      <AnimatePresence>
+        {showOverlay && !isMobile && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(10, 10, 15, 0.8)',
+              backdropFilter: 'blur(5px)',
+              zIndex: 45,
+              pointerEvents: 'none'
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       <motion.nav
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
