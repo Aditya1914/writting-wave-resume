@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -16,10 +16,27 @@ export const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeoutRef = useRef<number | null>(null);
+  
+  // Preload sections for smoother navigation
+  useEffect(() => {
+    // Force browser to calculate layout for all sections
+    navLinks.forEach(link => {
+      const section = document.querySelector(link.href);
+      if (section) {
+        // This will force layout calculation
+        section.getBoundingClientRect();
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
+      
+      // Don't update active section during programmatic scrolling
+      if (isScrolling) return;
       
       // Update active section based on scroll position
       const sections = navLinks.map(link => document.querySelector(link.href));
@@ -65,8 +82,17 @@ export const Navigation = () => {
     // Run initially to set correct section
     handleScroll();
     
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
+  }, [isScrolling]);
+
+  // Clear the timeout on unmount to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        window.clearTimeout(scrollTimeoutRef.current);
+      }
+    };
   }, []);
 
   // Close mobile menu when clicking outside or on link
@@ -94,8 +120,41 @@ export const Navigation = () => {
   const scrollToSection = (href: string) => {
     const element = document.querySelector(href);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setIsMobileMenuOpen(false); // Close mobile menu after navigation
+      // Clear any existing scroll timeout
+      if (scrollTimeoutRef.current) {
+        window.clearTimeout(scrollTimeoutRef.current);
+      }
+      
+      // First update the UI to indicate where we're going
+      setActiveSection(href.slice(1));
+      
+      // Set scrolling flag to prevent jittering of active indicator
+      setIsScrolling(true);
+      
+      // Get the element position
+      const rect = element.getBoundingClientRect();
+      const offsetTop = rect.top + window.scrollY;
+      
+      // Calculate scroll offset (for navigation bar)
+      const offset = 80; // Adjust based on your navbar height
+      
+      // Pre-render the target area to avoid white flashes
+      document.documentElement.style.scrollBehavior = 'smooth';
+      
+      // Use immediate scroll to update the position 
+      window.scrollTo({
+        top: offsetTop - offset,
+        behavior: 'smooth'
+      });
+      
+      // Reset scrolling flag after animation completes with a longer timeout for production
+      scrollTimeoutRef.current = window.setTimeout(() => {
+        setIsScrolling(false);
+        document.documentElement.style.scrollBehavior = '';
+      }, 1200); // Longer duration to ensure scroll completes in production
+      
+      // Close mobile menu
+      setIsMobileMenuOpen(false);
     }
   };
 
