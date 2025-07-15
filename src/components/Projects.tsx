@@ -459,17 +459,19 @@ export const Projects = () => {
                   <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 flex gap-2">
                     <a
                       href={project.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="glass-card p-2 rounded-lg hover:glow-effect touch-spacing"
                       aria-label="View on GitHub"
-                      onClick={(e) => e.preventDefault()} // Prevent actual navigation for demo
                     >
                       <Github className="w-4 h-4 sm:w-5 sm:h-5" />
                     </a>
                     <a
                       href={project.liveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="glass-card p-2 rounded-lg hover:glow-effect touch-spacing"
                       aria-label="View Live Demo"
-                      onClick={(e) => e.preventDefault()} // Prevent actual navigation for demo
                     >
                       <Link className="w-4 h-4 sm:w-5 sm:h-5" />
                     </a>
@@ -503,18 +505,22 @@ export const Projects = () => {
                 {/* Mobile-specific project actions */}
                 {isMobile && (
                   <div className="flex gap-2 pt-2">
-                    <button 
-                      className="flex-1 glass-card px-3 py-2 rounded-lg font-medium text-xs hover:glow-effect"
-                      onClick={(e) => e.preventDefault()}
+                    <a 
+                      href={project.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 glass-card px-3 py-2 rounded-lg font-medium text-xs hover:glow-effect text-center"
                     >
                       View Code
-                    </button>
-                    <button 
-                      className="flex-1 bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 text-primary font-medium py-2 px-3 rounded-lg text-xs"
-                      onClick={(e) => e.preventDefault()}
+                    </a>
+                    <a 
+                      href={project.liveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 text-primary font-medium py-2 px-3 rounded-lg text-xs text-center"
                     >
                       Live Demo
-                    </button>
+                    </a>
                   </div>
                 )}
               </div>
